@@ -1,0 +1,5 @@
+# Synthetic example; all values and evidence declarations are invented.
+demo.service = sample service | probe:text:example only | owner:ops | kind:service | asof:2026-10-03 | stale-after:30d | confidence:asserted | depends-on:demo.item | owned-by:demo.team
+demo.item.name = sample item | probe:text:example only | owner:ops | kind:label | asof:2026-10-03 | stale-after:30d | confidence:asserted
+demo.team = documentation group | probe:text:example only | owner:docs | kind:group | asof:2026-10-03 | stale-after:30d | confidence:UNPROBEABLE | contains:demo.guide
+demo.guide = sample guide | probe:text:example only | owner:docs | kind:document | asof:2026-10-03 | stale-after:30d | confidence:asserted | impacts:demo.service
