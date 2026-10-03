@@ -20,6 +20,19 @@ DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 DURATION = re.compile(r"[0-9]+d")
 
 
+def printable(text):
+    """Escape terminal controls in untrusted output text."""
+    escapes = {"\n": r"\n", "\r": r"\r", "\t": r"\t"}
+    return "".join(escapes.get(char, "\\x{:02x}".format(ord(char)))
+                   if ord(char) < 32 or 127 <= ord(char) <= 159 else char
+                   for char in text)
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        super().error(printable(message))
+
+
 @dataclass
 class Fact:
     address: str
@@ -40,7 +53,7 @@ class Finding:
 
     def render(self):
         return "{}:{}: {}: {}".format(
-            self.file, self.line, self.rule, self.message)
+            printable(self.file), self.line, printable(self.rule), printable(self.message))
 
 
 def valid_date(value):
@@ -166,12 +179,22 @@ def acquire(root):
     with os.scandir(str(root)) as entries:
         domains = sorted(entries, key=lambda entry: entry.name)
     for domain in domains:
+        if domain.name.startswith("."):
+            continue
+        if domain.is_symlink():
+            domain.stat()
         if not domain.is_dir():
             continue
         with os.scandir(domain.path) as entries:
             files = sorted(entries, key=lambda entry: entry.name)
         for entry in files:
-            if entry.name.endswith(".facts") and entry.is_file():
+            if entry.name.startswith("."):
+                continue
+            if not entry.name.endswith(".facts"):
+                continue
+            if entry.is_symlink():
+                entry.stat()
+            if entry.is_file():
                 relative = domain.name + "/" + entry.name
                 with open(entry.path, encoding="utf-8-sig", newline="") as source:
                     sources[relative] = source.read()
@@ -180,7 +203,7 @@ def acquire(root):
 
 def main(argv=None):
     sys.stdout.reconfigure(errors="backslashreplace")
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = ArgumentParser(description=__doc__, prog=printable(os.path.basename(sys.argv[0])))
     parser.add_argument("--root", required=True, type=Path,
                         help="read DIR/*/*.facts beneath DIR")
     args = parser.parse_args(argv)

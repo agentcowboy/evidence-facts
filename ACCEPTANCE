@@ -33,8 +33,8 @@ try:
         "stray-segment", "empty-relation", "unresolved-target",
     }
     fixtures = tests.INVALID_FIXTURES
-    require(len(fixtures) == 41 and len({case for case, rule, text in fixtures}) == 41,
-            "expected 41 distinct rejection fixtures")
+    require(len(fixtures) == 42 and len({case for case, rule, text in fixtures}) == 42,
+            "expected 42 distinct rejection fixtures")
     require({rule for case, rule, text in fixtures} == expected_rules
             and len(expected_rules) == 17, "expected 17 distinct rule IDs")
     for case, rule, text in fixtures:
@@ -44,11 +44,11 @@ try:
     stage = "TESTS"
     suite = unittest.defaultTestLoader.loadTestsFromModule(tests)
     result = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0).run(suite)
-    require(result.testsRun == 57 and not result.failures and not result.errors
+    require(result.testsRun == 73 and not result.failures and not result.errors
             and not result.skipped,
             "run={} failures={} errors={} skips={}".format(
                 result.testsRun, len(result.failures), len(result.errors), len(result.skipped)))
-    print("EVIDENCE_FACTS TESTS run=57 failures=0 errors=0 skips=0", flush=True)
+    print("EVIDENCE_FACTS TESTS run=73 failures=0 errors=0 skips=0", flush=True)
     print("EVIDENCE_FACTS ACCEPTANCE PASS", flush=True)
 except Exception as error:
     # Report the failed assertion without dumping fixture text or a traceback.
