@@ -4,7 +4,7 @@ A small plain-text format and Python linter for addressable claims, evidence met
 
 A record is one claim about a system: an address such as `billing.retry.max-attempts` and a value, plus required metadata declaring how to check it (`probe`), who owns it (`owner`), its kind (`kind`), when it was last confirmed (`asof`), how long until it is stale (`stale-after`), and how sure we are (`confidence`). Confidence means `asserted`: claimed, not reported as checked by its probe; `probed`: checked by its probe; or `UNPROBEABLE`: unable to be checked by a probe. These declarations are not verified by the linter. The files read in one run form a corpus.
 
-Use it when a claim should keep its address, declared evidence, owner, observation date, and references together on one line. This standalone v0.1.1 is derived from a private commit gate, with a stricter, generalized public profile: six required fields, duplicate-field rejection, real calendar dates, explicit structural errors. The public implementation is written for this profile; it has its own synthetic tests.
+Use it when a claim should keep its address, declared evidence, owner, observation date, and references together on one line. This standalone v0.1.2 is derived from a private commit gate, with a stricter, generalized public profile: six required fields, duplicate-field rejection, real calendar dates, explicit structural errors. The public implementation is written for this profile; it has its own synthetic tests.
 
 ## Run the example
 
@@ -41,7 +41,7 @@ python3 -B facts_lint.py --root /path/to/records
 python3 -B -m unittest discover -s tests -p 'test_facts_lint.py'
 ```
 
-The CLI reads only `ROOT/*/*.facts`; the file stem must match the address domain. It emits `file:line: rule: message` findings followed by `facts=N files=M errors=E`. Exit `0` means no structural findings, `1` means invalid records, and `2` means usage or acquisition failure. Missing roots, file roots, and failed discovery or reads fail with `2`. A valid empty directory passes with `facts=0 files=0 errors=0`; acceptance separately requires the nonempty demo.
+The CLI reads only `ROOT/*/*.facts`; the file stem must match the address domain; hidden names are skipped; a broken non-facts symlink directly under the root fails the run with exit `2`. It emits `file:line: rule: message` findings followed by `facts=N files=M errors=E`. Exit `0` means no structural findings, `1` means invalid records, and `2` means usage or acquisition failure. Missing roots, file roots, and failed discovery or reads fail with `2`. A valid empty directory passes with `facts=0 files=0 errors=0`; acceptance separately requires the nonempty demo.
 
 A failing run prints, for example: `demo/demo.facts:1: bad-date: invalid metadata: asof`.
 
@@ -56,3 +56,5 @@ Maintenance is best effort. Re-run `bash ACCEPTANCE` after changes and review th
 Built with AI coding agents; tested as described in ACCEPTANCE.
 
 MIT licensed; see [LICENSE](LICENSE).
+
+v0.1.2: tolerate non-UTF-8 filename creation refusal off Linux and clarify discovery scope.

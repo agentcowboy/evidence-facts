@@ -269,17 +269,24 @@ class FactsTests(unittest.TestCase):
                          (0, "facts=1 files=1 errors=0\n", ""))
 
     def test_non_utf8_filename(self):
+        expected_code = 1
+        expected_output = ("demo/bad-\\udcff.facts:1: malformed-line: expected ADDRESS = VALUE\n"
+                           "facts=0 files=1 errors=1\n")
         with tempfile.TemporaryDirectory(prefix="facts-names-") as temporary:
             root = Path(temporary)
             domain = root / "demo"
             domain.mkdir()
             file = domain / os.fsdecode(b"bad-\xff.facts")
-            file.write_text("invalid\n", encoding="utf-8")
+            try:  # Some filesystems (e.g. APFS) refuse non-UTF-8 names; Linux must accept it.
+                file.write_text("invalid\n", encoding="utf-8")
+            except OSError:
+                if sys.platform.startswith("linux"):
+                    raise
+                expected_code = 0
+                expected_output = "facts=0 files=0 errors=0\n"
             result = run_cli(root)
-        self.assertEqual((result.returncode, result.stderr), (1, ""))
-        self.assertEqual(result.stdout,
-                         "demo/bad-\\udcff.facts:1: malformed-line: expected ADDRESS = VALUE\n"
-                         "facts=0 files=1 errors=1\n")
+        self.assertEqual((result.returncode, result.stderr), (expected_code, ""))
+        self.assertEqual(result.stdout, expected_output)
 
     def test_conformance(self):
         lines = [
